@@ -4,7 +4,7 @@ const db = require('../config/db');
 
 // Todo list for test
 router.get('/', (req, res) => {
-    const query = 'SELECT * FROM todos ORDER BY todo_id DESC';
+    const query = 'SELECT * FROM tododb ORDER BY todo_id DESC';
     db.query(query, (err, results) => {
         if (err) throw err;
         res.render('test/todos-list', {
@@ -32,7 +32,7 @@ router.get('/users', (req, res) => {
 router.get('/users/:userId/todos', (req, res) => {
     const userId = req.params.userId;
     const userQuery = 'SELECT user_name FROM users WHERE user_id = ?';
-    const todosQuery = 'SELECT * FROM todos WHERE user_id = ? ORDER BY created_at DESC';
+    const todosQuery = 'SELECT * FROM tododb WHERE user_id = ? ORDER BY created_at DESC';
 
     db.query(userQuery, [userId], (err, userResult) => {
         if (err) throw err;
@@ -61,7 +61,7 @@ router.get('/users/:userId/todos-page', (req, res) => {
     const offset = (page - 1) * limit;
 
     const userQuery = 'SELECT user_name FROM users WHERE user_id = ?';
-    const countQuery = 'SELECT COUNT(*) AS count FROM todos WHERE user_id = ?';
+    const countQuery = 'SELECT COUNT(*) AS count FROM tododb WHERE user_id = ?';
     
     db.query(userQuery, [userId], (err, userResult) => {
         if (err) throw err;
@@ -76,7 +76,7 @@ router.get('/users/:userId/todos-page', (req, res) => {
             const totalTodos = countResult[0].count;
             const totalPages = Math.ceil(totalTodos / limit);
 
-            const todosQuery = 'SELECT * FROM todos WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?';
+            const todosQuery = 'SELECT * FROM tododb WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?';
             db.query(todosQuery, [userId, limit, offset], (err, todos) => {
                 if (err) throw err;
                 res.render('test/user-todos-page', {
@@ -111,7 +111,7 @@ router.post('/todoInsertPost', (req, res) => {
     const { user_id, title } = req.body;
     const is_completed = req.body.is_completed ? 1 : 0;
     
-    const query = 'INSERT INTO todos (user_id, title, is_completed) VALUES (?, ?, ?)';
+    const query = 'INSERT INTO tododb (user_id, title, is_completed) VALUES (?, ?, ?)';
     db.query(query, [user_id, title, is_completed], (err, result) => {
         if (err) throw err;
         res.redirect(`/test/users/${user_id}/todos`);
@@ -121,7 +121,7 @@ router.post('/todoInsertPost', (req, res) => {
 // Show form to modify a todo
 router.get('/todoModifyView/:todoId', (req, res) => {
     const { todoId } = req.params;
-    const query = 'SELECT * FROM todos WHERE todo_id = ?';
+    const query = 'SELECT * FROM tododb WHERE todo_id = ?';
     db.query(query, [todoId], (err, result) => {
         if (err) throw err;
         if (result.length === 0) {
@@ -141,7 +141,7 @@ router.post('/todoModifyPost/:todoId', (req, res) => {
     const { title, user_id } = req.body;
     const is_completed = req.body.is_completed ? 1 : 0;
 
-    const query = 'UPDATE todos SET title = ?, is_completed = ? WHERE todo_id = ?';
+    const query = 'UPDATE tododb SET title = ?, is_completed = ? WHERE todo_id = ?';
     db.query(query, [title, is_completed, todoId], (err, result) => {
         if (err) throw err;
         res.redirect(`/test/users/${user_id}/todos`);
@@ -153,7 +153,7 @@ router.post('/todoDeletePost/:todoId', (req, res) => {
     const { todoId } = req.params;
     const { user_id } = req.body;
     
-    const query = 'DELETE FROM todos WHERE todo_id = ?';
+    const query = 'DELETE FROM tododb WHERE todo_id = ?';
     db.query(query, [todoId], (err, result) => {
         if (err) throw err;
         res.redirect(`/test/users/${user_id}/todos`);

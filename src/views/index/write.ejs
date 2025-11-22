@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>새 글 작성</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+        header { margin-bottom: 20px; }
+        label { display: block; margin-top: 10px; }
+        input[type="text"] { width: 100%; padding: 6px; }
+        textarea { width: 100%; height: 300px; padding: 6px; }
+        .buttons { margin-top: 15px; }
+    </style>
+</head>
+<body>
+<header>
+    <a href="/board">← 목록</a>
+</header>
+
+<h2>새 글 작성</h2>
+
+<form action="/todos/write" method="post">
+    <label>
+        제목
+        <input type="text" name="title" required>
+    </label>
+
+    <label>
+        내용
+        <textarea name="content" required></textarea>
+    </label>
+
+    <div class="buttons">
+        <button type="submit">등록</button>
+        <a href="/board">취소</a>
+    </div>
+</form>
+
+</body>
+</html>

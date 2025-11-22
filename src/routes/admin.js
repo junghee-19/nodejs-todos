@@ -1,71 +1,111 @@
+// src/routes/admin.js
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 
-
-// Middleware to check for admin user
-const isAdmin = (req, res, next) => {
-    if (req.session.user && req.session.user.email === 'admin@example.com') {
-        return next();
+// 관리자 체크 미들웨어
+function requireAdmin(req, res, next) {
+    if (!req.session.user || !req.session.user.isAdmin) {
+        return res.status(403).send('관리자만 접근 가능합니다.');
     }
-    res.redirect('/');
-};
+    next();
+}
 
-// Admin page - list all users with pagination
-router.get('/', isAdmin, (req, res) => {
+// 관리자 대시보드
+router.get('/', requireAdmin, (req, res) => {
+    res.render('admin/index', {
+        title: '관리자 대시보드',
+        user: req.session.user
+    });
+});
+
+// 전체 게시글 목록 (관리자용, 페이지네이션 + 검색)
+router.get('/posts', requireAdmin, (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = 5;
+    const limit = 20;
     const offset = (page - 1) * limit;
 
-    const countQuery = 'SELECT COUNT(*) AS count FROM users';
-    db.query(countQuery, (err, countResult) => {
+    const keyword = req.query.keyword ? req.query.keyword.trim() : '';
+    const type = req.query.type || '';
+
+    let where = 'WHERE 1=1';
+    const params = [];
+    const countParams = [];
+
+    if (type === 'FREE' || type === 'NOTICE') {
+        where += ' AND type = ?';
+        params.push(type);
+        countParams.push(type);
+    }
+
+    if (keyword) {
+        where += ' AND title LIKE ?';
+        params.push(`%${keyword}%`);
+        countParams.push(`%${keyword}%`);
+    }
+
+    const countQuery = `SELECT COUNT(*) AS count FROM board_posts ${where}`;
+    db.query(countQuery, countParams, (err, countRows) => {
         if (err) throw err;
 
-        const totalUsers = countResult[0].count;
-        const totalPages = Math.ceil(totalUsers / limit);
+        const totalPosts = countRows[0].count;
+        const totalPages = Math.ceil(totalPosts / limit) || 1;
 
-        const query = 'SELECT * FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?';
-        db.query(query, [limit, offset], (err, results) => {
+        const listQuery = `
+            SELECT *
+            FROM board_posts
+            ${where}
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        `;
+        params.push(limit, offset);
+
+        db.query(listQuery, params, (err, posts) => {
             if (err) throw err;
-            res.render('admin', {
-                title: 'Admin - User Management',
+
+            res.render('admin/posts', {
+                title: '게시글 관리',
                 user: req.session.user,
-                users: results,
+                posts,
                 currentPage: page,
-                totalPages: totalPages
+                totalPages,
+                keyword,
+                type
             });
         });
     });
 });
 
-// Add a new user
-router.post('/add', isAdmin, (req, res) => {
-    const { user_name, email, password } = req.body;
-    const query = 'INSERT INTO users (user_name, email, password) VALUES (?, ?, ?)';
-    db.query(query, [user_name, email, password], (err, results) => {
+// 특정 글을 공지로 변경
+// POST /admin/posts/:postId/notice
+router.post('/posts/:postId/notice', requireAdmin, (req, res) => {
+    const postId = req.params.postId;
+    const query = 'UPDATE board_posts SET type = "NOTICE" WHERE post_id = ?';
+    db.query(query, [postId], (err) => {
         if (err) throw err;
-        res.redirect('/admin');
+        res.redirect('/admin/posts');
     });
 });
 
-// Update user
-router.post('/update/:id', isAdmin, (req, res) => {
-    const { id } = req.params;
-    const { user_name, email } = req.body;
-    const query = 'UPDATE users SET user_name = ?, email = ? WHERE user_id = ?';
-    db.query(query, [user_name, email, id], (err, results) => {
+// 특정 글을 자유글로 변경
+// POST /admin/posts/:postId/free
+router.post('/posts/:postId/free', requireAdmin, (req, res) => {
+    const postId = req.params.postId;
+    const query = 'UPDATE board_posts SET type = "FREE" WHERE post_id = ?';
+    db.query(query, [postId], (err) => {
         if (err) throw err;
-        res.redirect('/admin');
+        res.redirect('/admin/posts');
     });
 });
 
-// Delete user
-router.get('/delete/:id', isAdmin, (req, res) => {
-    const { id } = req.params;
-    const query = 'DELETE FROM users WHERE user_id = ?';
-    db.query(query, [id], (err, results) => {
+// 관리자 권한으로 글 삭제
+// POST /admin/posts/:postId/delete
+router.post('/posts/:postId/delete', requireAdmin, (req, res) => {
+    const postId = req.params.postId;
+    const query = 'DELETE FROM board_posts WHERE post_id = ?';
+    db.query(query, [postId], (err) => {
         if (err) throw err;
-        res.redirect('/admin');
+        res.redirect('/admin/posts');
     });
 });
 

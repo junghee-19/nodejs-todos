@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <a href="/board">← 게시판</a>
+    </div>
+    <div>
+        <% if (user) { %>
+            <span><%= user.name %> (관리자)</span>
+            <a href="/logout">로그아웃</a>
+        <% } %>
+    </div>
+</header>
+
+<h2>관리자 대시보드</h2>
+
+<ul>
+    <li><a href="/admin/posts">게시글 관리</a></li>
+</ul>
+
+</body>
+</html>

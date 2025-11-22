@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .meta { font-size: 13px; color: #666; margin-bottom: 10px; }
+        .content { border: 1px solid #ccc; padding: 15px; min-height: 200px; white-space: pre-wrap; }
+        .buttons { margin-top: 15px; }
+        .buttons form { display: inline-block; margin-left: 5px; }
+    </style>
+</head>
+<body>
+<header>
+    <a href="/board">← 목록</a>
+</header>
+
+<h2><%= post.title %></h2>
+
+<div class="meta">
+    작성자: <%= post.writer_name || '익명' %> |
+    조회수: <%= post.view_count %> |
+    작성일: <%= post.created_at %> |
+    수정일: <%= post.updated_at %>
+</div>
+
+<div class="content">
+    <%= post.content %>
+</div>
+
+<div class="buttons">
+    <a href="/todos/<%= post.post_id %>/edit">수정</a>
+    <form action="/todos/<%= post.post_id %>/delete" method="post"
+          onsubmit="return confirm('삭제하시겠습니까?');">
+        <button type="submit">삭제</button>
+    </form>
+</div>
+
+</body>
+</html>

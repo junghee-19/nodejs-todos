@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 수정</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+        header { margin-bottom: 20px; }
+        label { display: block; margin-top: 10px; }
+        input[type="text"] { width: 100%; padding: 6px; }
+        textarea { width: 100%; height: 300px; padding: 6px; }
+        .buttons { margin-top: 15px; }
+    </style>
+</head>
+<body>
+<header>
+    <a href="/board/<%= post.post_id %>">← 글 보기</a>
+</header>
+
+<h2>게시글 수정</h2>
+
+<form action="/todos/<%= post.post_id %>/edit" method="post">
+    <label>
+        제목
+        <input type="text" name="title" value="<%= post.title %>" required>
+    </label>
+
+    <label>
+        내용
+        <textarea name="content" required><%= post.content %></textarea>
+    </label>
+
+    <div class="buttons">
+        <button type="submit">수정 완료</button>
+        <a href="/board/<%= post.post_id %>">취소</a>
+    </div>
+</form>
+
+</body>
+</html>
